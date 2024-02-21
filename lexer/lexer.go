@@ -10,6 +10,7 @@ type Lexer struct {
 	position int
 	nextPosition int
 	parsingLine int
+	parsingColumn int
 	char byte
 }
 
@@ -24,6 +25,7 @@ func (l* Lexer) ReadChar() {
 		l.position = l.nextPosition
 		l.char = l.input[l.position]
 		l.nextPosition ++
+		l.parsingColumn++
 	}
 }
 
@@ -32,6 +34,7 @@ func (l* Lexer) ReadNextNotWhiteSpaceChar() {
 	for l.char == ' ' || l.char == '\n' || l.char == '\t' || l.char == '\r' {
 		if l.char == '\n' {
 			l.parsingLine++
+			l.parsingColumn =1
 		}
 		l.ReadChar()
 	}
@@ -40,6 +43,7 @@ func (l* Lexer) ReadNextNotWhiteSpaceChar() {
 func (l* Lexer) BacktrackLexerPointer(char byte) {
 	l.position --
 	l.nextPosition --
+	l.parsingColumn--
 	l.char = char
 }
 
@@ -53,7 +57,7 @@ func isLetter (b byte) bool {
 func generateLetterToken (l *Lexer) token.Token {
 	myChar := l.char
 	word := ""
-	starting_column := l.position +1
+	starting_column := l.parsingColumn
 	var lastChar byte
 	for isLetter(myChar) {
 		word += string(myChar)
@@ -74,7 +78,7 @@ func isNumber (b byte) bool {
 func generateNumberToken (l *Lexer) token.Token {
 	myChar := l.char
 	word := ""
-	starting_column := l.position +1
+	starting_column := l.parsingColumn
 	var lastChar byte
 	for isNumber(myChar) {
 		word += string(myChar)
@@ -104,55 +108,55 @@ func (l *Lexer) NextToken() token.Token {
 		nextChar := l.peekNextChar()
 		if (nextChar == '=') {
 			prevChar := l.char
-			starting_column := l.position +1
+			starting_column := l.parsingColumn
 			//fix the pointers
 			l.ReadChar()
 			newChar := l.char
 			newLiteral := string(prevChar) + string(newChar)
 			return token.Token {Type : token.EQUAL, Literal : newLiteral, Line : l.parsingLine, Column : starting_column}
 		} else {
-			return token.Token {Type : token.ASSIGN, Literal : string(l.char), Line : l.parsingLine, Column : l.position+1}
+			return token.Token {Type : token.ASSIGN, Literal : string(l.char), Line : l.parsingLine, Column : l.parsingColumn}
 		}
 		//do the equal verification
 	case '!':
 		nextChar := l.peekNextChar()
 		if (nextChar == '=') {
 			prevChar := l.char
-			starting_column := l.position +1
+			starting_column := l.parsingColumn
 			//fix the pointers
 			l.ReadChar()
 			newChar := l.char
 			newLiteral := string(prevChar) + string(newChar)
 			return token.Token {Type : token.NOT_EQUAL, Literal : newLiteral, Line : l.parsingLine, Column : starting_column}
 		} else {
-			return token.Token {Type : token.NOT, Literal : string(l.char), Line : l.parsingLine, Column : l.position+1}
+			return token.Token {Type : token.NOT, Literal : string(l.char), Line : l.parsingLine, Column : l.parsingColumn}
 		}
 	case '+':
-		return token.Token {Type : token.PLUS, Literal : string(l.char), Line : l.parsingLine, Column : l.position+1}
+		return token.Token {Type : token.PLUS, Literal : string(l.char), Line : l.parsingLine, Column : l.parsingColumn}
 	case '-':
-		return token.Token {Type : token.MINUS, Literal : string(l.char), Line : l.parsingLine, Column : l.position+1}
+		return token.Token {Type : token.MINUS, Literal : string(l.char), Line : l.parsingLine, Column : l.parsingColumn}
 	case '/':
-		return token.Token {Type : token.DIVIDE, Literal : string(l.char), Line : l.parsingLine, Column : l.position+1}
+		return token.Token {Type : token.DIVIDE, Literal : string(l.char), Line : l.parsingLine, Column : l.parsingColumn}
 	case '*':
-		return token.Token {Type : token.MULTIPLY, Literal : string(l.char), Line : l.parsingLine, Column : l.position+1}
+		return token.Token {Type : token.MULTIPLY, Literal : string(l.char), Line : l.parsingLine, Column : l.parsingColumn}
 	case ';':
-		return token.Token {Type : token.SEMICOLON, Literal : string(l.char), Line : l.parsingLine, Column : l.position+1}
+		return token.Token {Type : token.SEMICOLON, Literal : string(l.char), Line : l.parsingLine, Column : l.parsingColumn}
 	case ',':
-		return token.Token {Type : token.COMMA, Literal : string(l.char), Line : l.parsingLine, Column : l.position+1}
+		return token.Token {Type : token.COMMA, Literal : string(l.char), Line : l.parsingLine, Column : l.parsingColumn}
 	case '(':
-		return token.Token {Type : token.LEFT_PARENTHESIS, Literal : string(l.char), Line : l.parsingLine, Column : l.position+1}
+		return token.Token {Type : token.LEFT_PARENTHESIS, Literal : string(l.char), Line : l.parsingLine, Column : l.parsingColumn}
 	case ')':
-		return token.Token {Type : token.RIGHT_PARENTHESIS, Literal : string(l.char), Line : l.parsingLine, Column : l.position+1}
+		return token.Token {Type : token.RIGHT_PARENTHESIS, Literal : string(l.char), Line : l.parsingLine, Column : l.parsingColumn}
 	case '{':
-		return token.Token {Type : token.LEFT_BRACE, Literal : string(l.char), Line : l.parsingLine, Column : l.position+1}
+		return token.Token {Type : token.LEFT_BRACE, Literal : string(l.char), Line : l.parsingLine, Column : l.parsingColumn}
 	case '}':
-		return token.Token {Type : token.RIGHT_BRACE, Literal : string(l.char), Line : l.parsingLine, Column : l.position+1}
+		return token.Token {Type : token.RIGHT_BRACE, Literal : string(l.char), Line : l.parsingLine, Column : l.parsingColumn}
 	case '<':
-		return token.Token {Type : token.SMALLER, Literal : string(l.char), Line : l.parsingLine, Column : l.position+1}
+		return token.Token {Type : token.SMALLER, Literal : string(l.char), Line : l.parsingLine, Column : l.parsingColumn}
 	case '>':
-		return token.Token {Type : token.BIGGER, Literal : string(l.char), Line : l.parsingLine, Column : l.position+1}
+		return token.Token {Type : token.BIGGER, Literal : string(l.char), Line : l.parsingLine, Column : l.parsingColumn}
 	case 0:
-		return token.Token {Type : token.EOF, Literal :"", Line : l.parsingLine, Column : l.position+1} 
+		return token.Token {Type : token.EOF, Literal :"", Line : l.parsingLine, Column : l.parsingColumn} 
 	default:
 		if (isLetter(l.char)) {
 			return generateLetterToken(l)
@@ -160,6 +164,6 @@ func (l *Lexer) NextToken() token.Token {
 		if (isNumber(l.char)) {
 			return generateNumberToken(l)
 		}
-		return token.Token {Type : token.ILLEGAL, Literal: "", Line : l.parsingLine, Column : l.position+1} 
+		return token.Token {Type : token.ILLEGAL, Literal: "", Line : l.parsingLine, Column : l.parsingColumn} 
 	}
 }
